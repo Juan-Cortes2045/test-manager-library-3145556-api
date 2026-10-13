@@ -3,6 +3,7 @@
 namespace Tests\Unit\Domain;
 
 use App\Application\Ports\Clock;
+use Tests\Fakes\FixedClock;
 use App\Domain\Book;
 use App\Domain\BookNotAvailable;
 use App\Domain\DomainRuleViolated;
@@ -14,18 +15,6 @@ use App\Domain\LoanStatus;
 use App\Domain\Quantity;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-
-final class FixedClock implements Clock
-{
-    public function __construct(private DateTimeImmutable $now)
-    {
-    }
-
-    public function now(): DateTimeImmutable
-    {
-        return $this->now;
-    }
-}
 
 final class LoanTest extends TestCase
 {
