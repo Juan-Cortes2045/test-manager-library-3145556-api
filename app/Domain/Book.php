@@ -60,6 +60,37 @@ final class Book
         $this->availableCopies++;
     }
 
+    /**
+     * Replaces title, author, category and total (PUT /books/{id}). Changing the total moves the available
+     * copies by the same difference and never leaves them below 0 (CA-03.3).
+     */
+    public function update(string $title, string $author, string $categoryId, Quantity $totalCopies): void
+    {
+        $available = $this->availableCopies + ($totalCopies->value - $this->totalCopies->value);
+        if ($available < 0) {
+            throw new InvalidAvailableCopies('El nuevo total dejaría disponibles por debajo de 0.');
+        }
+        $this->title = self::requiredText($title, 'título');
+        $this->author = self::requiredText($author, 'autor');
+        $this->categoryId = $categoryId;
+        $this->totalCopies = $totalCopies;
+        $this->availableCopies = $available;
+    }
+
+    /** Cover is an opaque key, never an empty string (CA-03.4). */
+    public function setCover(string $coverKey): void
+    {
+        if ($coverKey === '') {
+            throw new DomainRuleViolated('La clave de portada no puede ser una cadena vacía.');
+        }
+        $this->coverKey = $coverKey;
+    }
+
+    public function removeCover(): void
+    {
+        $this->coverKey = null;
+    }
+
     /** Soft delete (CA-03.5, ADR-003). The "no open loans" check belongs to the use case (T-08). */
     public function softDelete(DateTimeImmutable $at): void
     {
