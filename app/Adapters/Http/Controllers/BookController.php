@@ -64,10 +64,29 @@ final class BookController
 
     public function putCover(Request $request, string $id): JsonResponse
     {
-        $request->validate(['file' => 'required|file']);
-        $b = $this->books->setCover($id, (string) file_get_contents($request->file('file')->getRealPath()));
+        $bytes = $request->hasFile('file') ? (string) file_get_contents($request->file('file')->getRealPath()) : $this->multipartPart($request, 'file');
+        if ($bytes === null) {
+            return ErrorResponder::body(422, 'VALIDATION_ERROR', 'Hay campos inválidos.', [['field' => 'file', 'issue' => 'El archivo es obligatorio.']]);
+        }
+        $b = $this->books->setCover($id, $bytes);
 
         return Json::ok(Json::book($b, $this->categories->nameOf($b->categoryId())));
+    }
+
+    /** PHP does not parse multipart bodies on PUT; read the named part from the raw body (api-contract.md §3.4). */
+    private function multipartPart(Request $request, string $name): ?string
+    {
+        if (preg_match('/boundary="?([^";]+)"?/', (string) $request->header('Content-Type'), $m) !== 1) {
+            return null;
+        }
+        foreach (explode('--'.$m[1], $request->getContent()) as $part) {
+            [$headers, $body] = array_pad(explode("\r\n\r\n", $part, 2), 2, null);
+            if ($body !== null && preg_match('/name="'.preg_quote($name, '/').'"/', $headers) === 1) {
+                return substr($body, 0, -2);
+            }
+        }
+
+        return null;
     }
 
     public function deleteCover(string $id): Response
