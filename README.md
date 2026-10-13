@@ -6,7 +6,7 @@ Backend de *Manager Library* en **PHP 8.3 con Laravel 13**. Implementa el spec d
 [`test-manager-library-3145556-docs`](../test-manager-library-3145556-docs) según su traducción en `docs/spec-laravel/`
 (plan, interpretaciones y tareas). El modelo de datos y el contrato son los del spec original; no se amplían.
 
-## Qué hay hoy (T-01, T-02 y T-03)
+## Qué hay hoy (T-01 a T-04)
 
 | Elemento | Archivo | Regla |
 |---|---|---|
@@ -16,6 +16,7 @@ Backend de *Manager Library* en **PHP 8.3 con Laravel 13**. Implementa el spec d
 | Migración inicial: esquema `library`, seis tablas, PK, FK, `CHECK`, índices y las cinco categorías | `database/migrations/2026_10_13_000000_create_library_schema.php` | T-02; `data-model.md` §3, §4, §5, §9 |
 | Consultas de comprobación del modelo | `database/checks/data-model-section-10.sql` | `data-model.md` §10 |
 | Objetos de valor `Isbn`, `Quantity`, `DateRange` en PHP puro, con pruebas | `app/Domain/`, `tests/Unit/Domain/` | T-03; artículo I |
+| Agregado `Book`: `withdraw` (nunca < 0), `restock` (nunca > total), baja lógica | `app/Domain/Book.php`, `tests/Unit/Domain/BookTest.php` | T-04; RN-1; ADR-003 |
 | Punto único de composición (aún sin enlaces) | `app/Bootstrap/LibraryServiceProvider.php` | Artículo III |
 | Capas hexagonales aún vacías | `app/Application/{Ports,Services}`, `app/Adapters/{Persistence,Storage,Security}` | Artículos I y II |
 | Imagen Docker: ejecuta las migraciones y después sirve en el puerto 8000 | `Dockerfile`, `docker/entrypoint.sh` | Artículo V; I-08 |
@@ -53,5 +54,5 @@ docker compose -f ../test-manager-library-3145556-infra/docker-compose.yml exec 
 
 ## Pendiente
 
-Todo lo demás del núcleo (T-04 a T-17): dominio, casos de uso, autenticación JWT, admin inicial, resto de rutas. El estado real
+Todo lo demás del núcleo (T-05 a T-17): dominio, casos de uso, autenticación JWT, admin inicial, resto de rutas. El estado real
 de cada tarea está en `docs/spec-laravel/tasks.md`.
