@@ -6,7 +6,7 @@ Backend de *Manager Library* en **PHP 8.3 con Laravel 13**. Implementa el spec d
 [`test-manager-library-3145556-docs`](../test-manager-library-3145556-docs) según su traducción en `docs/spec-laravel/`
 (plan, interpretaciones y tareas). El modelo de datos y el contrato son los del spec original; no se amplían.
 
-## Qué hay hoy (T-01 a T-04)
+## Qué hay hoy (núcleo T-01 a T-17, más T-18 y T-19)
 
 | Elemento | Archivo | Regla |
 |---|---|---|
@@ -52,7 +52,14 @@ docker compose -f ../test-manager-library-3145556-infra/docker-compose.yml exec 
   psql -U library -d library -f - < database/checks/data-model-section-10.sql
 ```
 
-## Pendiente
+## Verificación de punta a punta
 
-Todo lo demás del núcleo (T-05 a T-17): dominio, casos de uso, autenticación JWT, admin inicial, resto de rutas. El estado real
-de cada tarea está en `docs/spec-laravel/tasks.md`.
+```bash
+# Con el stack de infra levantado (credenciales del admin desde infra/.env)
+BASE=http://localhost:8000/api/v1 ADMIN_USERNAME=... ADMIN_PASSWORD=... sh tests/e2e/smoke.sh                  # 52 comprobaciones
+BASE=http://localhost:8000/api/v1 ADMIN_USERNAME=... ADMIN_PASSWORD=... sh tests/e2e/concurrency-and-covers.sh  # 11 comprobaciones
+```
+
+Capas: `app/Domain` (PHP puro), `app/Application` (puertos y casos de uso), `app/Adapters` (HTTP, persistencia, seguridad,
+portadas, consola) y `app/Bootstrap/LibraryServiceProvider.php` (único punto de composición). `tests/Architecture` comprueba
+los artículos I, II y III. El estado real de cada tarea está en `docs/spec-laravel/tasks.md`.
