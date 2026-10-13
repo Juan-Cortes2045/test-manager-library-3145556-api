@@ -6,7 +6,7 @@ Backend de *Manager Library* en **PHP 8.3 con Laravel 13**. Implementa el spec d
 [`test-manager-library-3145556-docs`](../test-manager-library-3145556-docs) según su traducción en `docs/spec-laravel/`
 (plan, interpretaciones y tareas). El modelo de datos y el contrato son los del spec original; no se amplían.
 
-## Qué hay hoy (paso 4: T-01 y T-02)
+## Qué hay hoy (T-01, T-02 y T-03)
 
 | Elemento | Archivo | Regla |
 |---|---|---|
@@ -15,8 +15,9 @@ Backend de *Manager Library* en **PHP 8.3 con Laravel 13**. Implementa el spec d
 | Cuerpo de error único `{code, message, details}` para toda excepción | `app/Adapters/Http/ErrorResponder.php` | RNF-4; `architecture.md` §5 |
 | Migración inicial: esquema `library`, seis tablas, PK, FK, `CHECK`, índices y las cinco categorías | `database/migrations/2026_10_13_000000_create_library_schema.php` | T-02; `data-model.md` §3, §4, §5, §9 |
 | Consultas de comprobación del modelo | `database/checks/data-model-section-10.sql` | `data-model.md` §10 |
+| Objetos de valor `Isbn`, `Quantity`, `DateRange` en PHP puro, con pruebas | `app/Domain/`, `tests/Unit/Domain/` | T-03; artículo I |
 | Punto único de composición (aún sin enlaces) | `app/Bootstrap/LibraryServiceProvider.php` | Artículo III |
-| Capas hexagonales vacías | `app/Domain`, `app/Application/{Ports,Services}`, `app/Adapters/{Persistence,Storage,Security}` | Artículos I y II |
+| Capas hexagonales aún vacías | `app/Application/{Ports,Services}`, `app/Adapters/{Persistence,Storage,Security}` | Artículos I y II |
 | Imagen Docker: ejecuta las migraciones y después sirve en el puerto 8000 | `Dockerfile`, `docker/entrypoint.sh` | Artículo V; I-08 |
 
 ## Cambios respecto al esqueleto por defecto de Laravel
@@ -39,7 +40,7 @@ Dentro de `infra` (recomendado): ver `../test-manager-library-3145556-infra/READ
 ## Verificación
 
 ```bash
-# Pruebas (sin base de datos): health y cuerpo de error
+# Pruebas (sin base de datos): health, cuerpo de error y dominio
 docker run --rm -v "$PWD":/app -w /app php:8.3-cli php vendor/bin/phpunit
 
 # Rutas expuestas: solo GET api/v1/health
@@ -52,5 +53,5 @@ docker compose -f ../test-manager-library-3145556-infra/docker-compose.yml exec 
 
 ## Pendiente
 
-Todo lo demás del núcleo (T-03 a T-17): dominio, casos de uso, autenticación JWT, admin inicial, resto de rutas. El estado real
+Todo lo demás del núcleo (T-04 a T-17): dominio, casos de uso, autenticación JWT, admin inicial, resto de rutas. El estado real
 de cada tarea está en `docs/spec-laravel/tasks.md`.
