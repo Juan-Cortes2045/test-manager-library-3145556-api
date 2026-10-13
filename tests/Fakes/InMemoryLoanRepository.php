@@ -4,6 +4,7 @@ namespace Tests\Fakes;
 
 use App\Application\Ports\LoanRepository;
 use App\Application\Ports\OverdueLine;
+use App\Application\Ports\Page;
 use App\Application\Ports\ReportReader;
 use App\Domain\Book;
 use App\Domain\Loan;
@@ -55,6 +56,16 @@ final class InMemoryLoanRepository implements LoanRepository, ReportReader
 
     public function saveReturn(LoanItem $item, Book $book): void
     {
+    }
+
+    public function list(?DateTimeImmutable $from, ?DateTimeImmutable $toExclusive, ?string $status, ?string $memberId, DateTimeImmutable $now, int $page, int $size): Page
+    {
+        $found = array_values(array_filter($this->loans, fn (Loan $l) => ($from === null || $l->loanedAt >= $from)
+            && ($toExclusive === null || $l->loanedAt < $toExclusive) && ($memberId === null || $l->memberId === $memberId)
+            && ($status === null || $l->status($now)->value === $status)));
+        usort($found, fn (Loan $a, Loan $b) => $b->loanedAt <=> $a->loanedAt);
+
+        return new Page(array_slice($found, ($page - 1) * $size, $size), $page, $size, count($found));
     }
 
     public function overdueLines(DateTimeImmutable $now): array
