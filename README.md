@@ -1,50 +1,56 @@
 # test-manager-library-3145556-api
 
-> **Prueba técnica · Ficha ADSO 3145556**
-> Entrega: **martes 13 de octubre de 2026, a las 5:00 p. m.** (17:00, hora Colombia).
+> **Prueba técnica · Ficha ADSO 3145556** — entrega: martes 13 de octubre de 2026, 17:00 (hora Colombia).
 
-Este repositorio es el **backend** de *Manager Library*, en **PHP con Laravel**. **Empieza vacío a propósito**: se construye en el fork de cada aprendiz.
+Backend de *Manager Library* en **PHP 8.3 con Laravel 13**. Implementa el spec de
+[`test-manager-library-3145556-docs`](../test-manager-library-3145556-docs) según su traducción en `docs/spec-laravel/`
+(plan, interpretaciones y tareas). El modelo de datos y el contrato son los del spec original; no se amplían.
 
-## Instrucciones
+## Qué hay hoy (paso 4: T-01 y T-02)
 
-Cada aprendiz debe **crear el fork** de los seis repositorios del proyecto y **resolver el proyecto
-con el spec planteado**.
+| Elemento | Archivo | Regla |
+|---|---|---|
+| `GET /api/v1/health` → `{"status":"ok"}` | `routes/api.php`, `app/Adapters/Http/Controllers/HealthController.php` | T-01; `api-contract.md` §3.1 |
+| Prefijo `/api/v1`; sin rutas web, sin `/up`, sin rutas `storage/*` | `bootstrap/app.php`, `config/filesystems.php` | `api-contract.md` §1 |
+| Cuerpo de error único `{code, message, details}` para toda excepción | `app/Adapters/Http/ErrorResponder.php` | RNF-4; `architecture.md` §5 |
+| Migración inicial: esquema `library`, seis tablas, PK, FK, `CHECK`, índices y las cinco categorías | `database/migrations/2026_10_13_000000_create_library_schema.php` | T-02; `data-model.md` §3, §4, §5, §9 |
+| Consultas de comprobación del modelo | `database/checks/data-model-section-10.sql` | `data-model.md` §10 |
+| Punto único de composición (aún sin enlaces) | `app/Bootstrap/LibraryServiceProvider.php` | Artículo III |
+| Capas hexagonales vacías | `app/Domain`, `app/Application/{Ports,Services}`, `app/Adapters/{Persistence,Storage,Security}` | Artículos I y II |
+| Imagen Docker: ejecuta las migraciones y después sirve en el puerto 8000 | `Dockerfile`, `docker/entrypoint.sh` | Artículo V; I-08 |
 
-1. Hacer fork, a su cuenta de GitHub, de cada repositorio de la tabla del final.
-2. Leer el spec en [`test-manager-library-3145556-docs`](https://github.com/code-sena/test-manager-library-3145556-docs).
-   Se entrega en dos versiones: `spec-python/` y `spec-.net/`.
-3. Desarrollar en los forks.
+## Cambios respecto al esqueleto por defecto de Laravel
 
-## El reto se desarrolla con React y PHP (Laravel)
+| Por defecto | Problema con el spec | Cambio |
+|---|---|---|
+| Migraciones `users`, `cache`, `jobs` | Solo seis tablas (`data-model.md` §2) | Eliminadas, junto con `User`, `UserFactory` y `DatabaseSeeder` |
+| Sesión, caché y colas con driver `database` | Necesitan tablas propias de Laravel | `array`, `array` y `sync`; trabajos fallidos `null` |
+| Tabla `migrations` en el esquema por defecto | Sería una séptima tabla en `library` | Se guarda en `public.migrations`; `search_path` = `library,public` |
+| Rutas `web`, `/up` y `storage/{path}` | Fuera del contrato | Eliminadas o desactivadas |
+| Errores 422 `{message, errors}` y páginas HTML de error | Cuerpo de error único | Todo pasa por `ErrorResponder` |
+| `timestamps()` | Sin `created_at`/`updated_at` | La migración no los usa; ninguna columna lleva `DEFAULT` |
 
-El spec está escrito para Python y para .NET, pero el reto **no** se hace en esos lenguajes:
+`ck_book_total_positive` y `ck_user_role` **no** se crean: `data-model.md` §4 los marca como pendientes (T-18).
 
-| Capa | Tecnología del reto |
-|---|---|
-| Frontend | React |
-| Backend | PHP con Laravel |
+## Arranque
 
-Lo que el spec define sobre el negocio —historias, criterios de aceptación, reglas, contrato de la
-API, modelo de datos— se respeta. Lo que define sobre la tecnología se traduce a React y Laravel.
+Dentro de `infra` (recomendado): ver `../test-manager-library-3145556-infra/README.md`.
 
-## La prueba no consiste en escribir el código
+## Verificación
 
-El propósito principal es ver la **capacidad de desempeño con SDD** (*Spec-Driven Development*,
-desarrollo guiado por especificación): cómo se lee, se interpreta y se aplica una especificación
-para llevarla a un stack distinto. El código es el medio, no el fin.
+```bash
+# Pruebas (sin base de datos): health y cuerpo de error
+docker run --rm -v "$PWD":/app -w /app php:8.3-cli php vendor/bin/phpunit
 
-## Entrega
+# Rutas expuestas: solo GET api/v1/health
+docker run --rm -v "$PWD":/app -w /app php:8.3-cli php artisan route:list
 
-Cuenta lo que quede **subido a los forks antes de las 5:00 p. m.** (17:00). Lo que llegue después no se revisa.
-No hay prórroga: suban avances parciales con commits pequeños durante la prueba.
+# Modelo de datos, con la API levantada desde infra
+docker compose -f ../test-manager-library-3145556-infra/docker-compose.yml exec -T db \
+  psql -U library -d library -f - < database/checks/data-model-section-10.sql
+```
 
-## Los seis repositorios
+## Pendiente
 
-| Repositorio | Qué va ahí |
-|---|---|
-| [`test-manager-library-3145556-docs`](https://github.com/code-sena/test-manager-library-3145556-docs) | El spec: `spec-python/` y `spec-.net/` |
-| [`test-manager-library-3145556-api`](https://github.com/code-sena/test-manager-library-3145556-api) | Backend en PHP (Laravel) |
-| [`test-manager-library-3145556-app`](https://github.com/code-sena/test-manager-library-3145556-app) | Frontend en React |
-| [`test-manager-library-3145556-page`](https://github.com/code-sena/test-manager-library-3145556-page) | Sitio público estático de presentación |
-| [`test-manager-library-3145556-infra`](https://github.com/code-sena/test-manager-library-3145556-infra) | Contenedores, red, volúmenes y motor de base de datos vacío |
-| [`test-manager-library-3145556-tool`](https://github.com/code-sena/test-manager-library-3145556-tool) | Utilidades: sembrador de datos de demostración |
+Todo lo demás del núcleo (T-03 a T-17): dominio, casos de uso, autenticación JWT, admin inicial, resto de rutas. El estado real
+de cada tarea está en `docs/spec-laravel/tasks.md`.
