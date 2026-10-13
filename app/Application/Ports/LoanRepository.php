@@ -28,6 +28,9 @@ interface LoanRepository
     /** Sets returned_at and restocks the book in one transaction (CA-07.1). */
     public function saveReturn(LoanItem $item, Book $book): void;
 
+    /** Q6: loans by range [from, toExclusive), computed status and member, newest first (CA-08.2). */
+    public function list(?DateTimeImmutable $from, ?DateTimeImmutable $toExclusive, ?string $status, ?string $memberId, DateTimeImmutable $now, int $page, int $size): Page;
+
     /** @return list<OverdueLine> Q8: unreturned items with due_at before $now. */
     public function overdueLines(DateTimeImmutable $now): array;
 }
